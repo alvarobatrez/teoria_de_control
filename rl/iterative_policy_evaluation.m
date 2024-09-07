@@ -53,5 +53,5 @@ end
 disp('Matriz de Recompensas')
 disp(R)
 
-disp('V(s)')
+disp('Funcion de Valor')
 disp(V)
