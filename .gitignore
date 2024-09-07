@@ -1,0 +1,70 @@
+# MATLAB specific files
+*.asv
+*.m~
+*.mlx~
+*.mat
+*.mlapp
+*.mltbx
+*.mlappinstall
+*.mex*
+*.xvc
+*.mdlp
+*.slxc
+*.slx
+*.autosave
+*.mex*
+*.p
+
+# Simulink cache and code generation files
+.slxc
+.slx
+*.mdl.rtw
+*_rtw.mk
+*_sfprj
+*_accel_rtw
+
+# Project specific files
+*.prj
+*.tmw
+*.codegen
+*.mexw*
+*.mexmaci*
+*.mexs*
+*.mexa*
+*.mexso*
+*.mlpkginstall
+*.mlpkginfo
+
+# MATLAB Generated apps
+*.app
+
+# MATLAB Editor backup files
+*.m~
+*.mlx~
+
+# MATLAB Crash logs
+crash_dump.*.log
+
+# MATLAB figures
+*.fig
+
+# MATLAB Simulink specific files
+*.mdlp
+
+# MATLAB session generated files
+*.session
+
+# Mac OS generated files (for compatibility if you're using a Mac)
+.DS_Store
+
+# Windows generated files (for compatibility if you're using Windows)
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Ignoring folders related to the MATLAB code generation
+codegen/
+slprj/
+work/
