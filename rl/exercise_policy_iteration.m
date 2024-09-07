@@ -1,6 +1,6 @@
-clear, clc
+close all; clear, clc
 
-R = [0 -10 -10 -10; -1 -1 -1 -1; -10 -10 -10 -1; -1 -1 -1 -1];
+R = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
 [m, n] = size(R);
@@ -8,9 +8,10 @@ num_actions = length(actions);
 
 pi = randi(num_actions, m, n);
 pi(R==0) = 0;
+pi(R==1) = 0;
 V = zeros(m, n);
 
-theta = 0.001;
+theta = 1e-6;
 gamma = 0.9;
 
 while true
@@ -24,16 +25,15 @@ while true
     end
 end
 
-disp('Matriz de Recompensas')
-disp(R)
-
-disp('V(s)')
-disp(V)
-
 disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
 disp('Politica Optima')
 disp(pi)
 
+draw_heatmap(V)
+
+start_position = [1 1];
+[row, col] = find(R == 0);
+draw_maze(R, start_position, pi, [row col])
 
 function V = policy_evaluation(R, pi, V, theta, gamma, actions, m, n)
     
@@ -43,7 +43,7 @@ function V = policy_evaluation(R, pi, V, theta, gamma, actions, m, n)
         for i = 1 : m
             for j = 1 : n
     
-                if R(i, j) == 0
+                if R(i, j) == 0 || R(i, j) == 1
                     continue
                 end
     
@@ -52,7 +52,7 @@ function V = policy_evaluation(R, pi, V, theta, gamma, actions, m, n)
                 new_i = i + actions(action, 1);
                 new_j = j + actions(action, 2);
     
-                if ~(new_i >= 1 && new_i <= m && new_j >=1 && new_j <= n)
+                if ~(new_i >= 1 && new_i <= m && new_j >=1 && new_j <= n && R(new_i,new_j) ~= 1)
                     new_i = i;
                     new_j = j;
                 end
@@ -74,10 +74,10 @@ function [V, pi, policy_stable] = policy_improvement(R, pi, V, gamma, actions, n
     for i = 1 : m
         for j = 1 : n
 
-            if R(i, j) == 0
+            if R(i, j) == 0 || R(i, j) == 1
                 continue
             end
-
+            
             old_action = pi(i, j);
             aux = zeros(1, num_actions);
 
@@ -86,7 +86,7 @@ function [V, pi, policy_stable] = policy_improvement(R, pi, V, gamma, actions, n
                 new_i = i + actions(action, 1);
                 new_j = j + actions(action, 2);
 
-                if ~(new_i >= 1 && new_i <= m && new_j >=1 && new_j <= n)
+                if ~(new_i >= 1 && new_i <= m && new_j >=1 && new_j <= n && R(new_i,new_j) ~= 1)
                     new_i = i;
                     new_j = j;
                 end

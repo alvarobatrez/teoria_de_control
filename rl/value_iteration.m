@@ -17,6 +17,11 @@ while true
     
     for i = 1 : m
         for j = 1 : n
+
+            if R(i, j) == 0
+                continue
+            end
+
             v = V(i, j);
             aux = zeros(1, num_actions);
 
@@ -50,6 +55,5 @@ disp('V(s)')
 disp(V)
 
 disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
-
-disp('Politica')
+disp('Politica Optima')
 disp(pi)
