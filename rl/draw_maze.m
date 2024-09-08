@@ -5,7 +5,7 @@ function draw_maze(maze, agent_position, policy, exit)
     figure
 
     imagesc(maze)
-    colormap([1 0 0; 0 0 0; 1 1 1])
+    colormap([1 0 0; 0 0 0; 0.9 0.9 0.9])
     hold on
     axis off
     axis equal
