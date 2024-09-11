@@ -48,9 +48,11 @@ while true
     end
 end
 
+[~, policy] = max(pi, [], 3);
+
 disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
 disp('Politica Optima')
-disp(pi)
+disp(policy)
 
 draw_heatmap(V)
 
