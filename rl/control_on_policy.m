@@ -13,7 +13,7 @@ num_episodes = 1000;
 
 pi = ones(m, n, num_actions) / num_actions;
 Q = zeros(m, n, num_actions);
-N = zeros(size(Q));
+N = zeros(m, n, num_actions);
 
 start_position = [1 1];
 [goal_row, goal_col] = find(R==0);
