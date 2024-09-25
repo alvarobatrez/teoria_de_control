@@ -57,4 +57,5 @@ function plot_q_values(Q)
     end
 
     title('Action-Value Function')
+    axis off
 end
