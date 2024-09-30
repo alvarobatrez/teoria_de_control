@@ -28,4 +28,4 @@ while ~isequal(state, goal_position)
 end
 
 clc
-fprintf('Episode %i finished at position (%i,%i)\n', episode, i, j);
+fprintf('Episode %i finished\n', episode);

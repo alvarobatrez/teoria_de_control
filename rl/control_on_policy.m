@@ -55,6 +55,5 @@ disp(policy)
 
 plot_q_values(Q)
 
-start_position = [1 1];
 [row, col] = find(R == 0);
 draw_maze(R, start_position, policy, [row col])

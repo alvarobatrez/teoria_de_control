@@ -23,7 +23,6 @@ for episode = 1 : num_episodes
     action = egreedy_action(epsilon, Q, state, num_actions);
 
     while ~isequal(state, [goal_row, goal_col])
-
         [next_state, reward] = step(R, state, action, actions, m, n);
         next_action = egreedy_action(epsilon, Q, next_state, num_actions);
         Q(state(1), state(2), action) = Q(state(1), state(2), action) + alpha * (reward + gamma * Q(next_state(1), next_state(2), next_action) - Q(state(1), state(2), action));
