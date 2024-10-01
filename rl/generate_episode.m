@@ -1,4 +1,4 @@
-function [states, actions_taken, rewards] = generate_episode(R, pi, start_position, goal_position, actions, num_actions, episode, m, n)
+function [states, actions_taken, rewards] = generate_episode(R, pi, start_position, goal_position, actions, num_actions, m, n)
 
 state = start_position;
 i = state(1);
@@ -26,6 +26,3 @@ while ~isequal(state, goal_position)
     actions_taken = [actions_taken; action];
     rewards = [rewards; R(i, j)];
 end
-
-clc
-fprintf('Episode %i finished\n', episode);

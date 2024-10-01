@@ -20,7 +20,7 @@ start_position = [1 1];
 
 for episode = 1 : num_episodes
     epsilon = max(0.1, decay*epsilon);
-    [states, actions_taken, rewards] = generate_episode(R, pi, start_position, [goal_row, goal_col], actions, num_actions, episode, m, n);
+    [states, actions_taken, rewards] = generate_episode(R, pi, start_position, [goal_row, goal_col], actions, num_actions, m, n);
     sa = [states actions_taken];
     G = 0;
     

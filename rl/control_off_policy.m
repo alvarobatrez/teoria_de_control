@@ -10,7 +10,8 @@ start_position = [1 1];
 [goal_row, goal_col] = find(R==0);
 
 gamma = 0.99;
-epsilon = 0.1;
+epsilon = 1;
+decay = 0.99;
 num_episodes = 1000;
 
 Q = -100 * ones(m, n, num_actions);
@@ -20,8 +21,9 @@ C = zeros(m, n, num_actions);
 pi = ones(m, n, num_actions) / num_actions;
 
 for episode = 1 : num_episodes
-    b = pi;
-    [states, actions_taken, rewards] = generate_episode(R, b, start_position, [goal_row, goal_col], actions, num_actions, episode, m, n);
+    epsilon = max(0.1, decay*epsilon);
+    b = (1 - epsilon) * pi + (epsilon / num_actions) * ones(m, n, num_actions);
+    [states, actions_taken, rewards] = generate_episode(R, b, start_position, [goal_row, goal_col], actions, num_actions, m, n);
     G = 0;
     W = 1;
     
