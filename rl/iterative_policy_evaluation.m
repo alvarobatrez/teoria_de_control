@@ -6,6 +6,7 @@ actions = [-1 0; 0 1; 1 0; 0 -1];
 [m, n] = size(R);
 num_actions = length(actions);
 
+prob = 0.25;
 theta = 0.001;
 gamma = 1;
 
@@ -35,7 +36,7 @@ while true
                     new_j = j;
                 end
         
-                suma = suma + 0.25 * (R(i, j) + gamma * Vp(new_i, new_j));
+                suma = suma + prob * (R(i, j) + gamma * Vp(new_i, new_j));
             end
             
             V(i,j) = suma;
