@@ -17,7 +17,6 @@ gamma = 0.9;
 while true
 
     V = policy_evaluation(R, pi, V, theta, gamma, actions, m, n);
-
     [V, pi, policy_stable] = policy_improvement(R, pi, V, gamma, actions, num_actions, m, n);
 
     if policy_stable == true
@@ -42,7 +41,6 @@ function V = policy_evaluation(R, pi, V, theta, gamma, actions, m, n)
     
         for i = 1 : m
             for j = 1 : n
-    
                 if R(i, j) == 0 || R(i, j) == 1
                     continue
                 end
@@ -57,7 +55,7 @@ function V = policy_evaluation(R, pi, V, theta, gamma, actions, m, n)
                     new_j = j;
                 end
     
-                V(i, j) = R(i, j) + gamma * V(new_i, new_j);
+                V(i, j) = R(new_i, new_j) + gamma * V(new_i, new_j);
                 delta = max(delta, abs(v - V(i, j)));
             end
         end
@@ -73,7 +71,6 @@ function [V, pi, policy_stable] = policy_improvement(R, pi, V, gamma, actions, n
 
     for i = 1 : m
         for j = 1 : n
-
             if R(i, j) == 0 || R(i, j) == 1
                 continue
             end
@@ -82,7 +79,6 @@ function [V, pi, policy_stable] = policy_improvement(R, pi, V, gamma, actions, n
             aux = zeros(1, num_actions);
 
             for action = 1 : num_actions
-
                 new_i = i + actions(action, 1);
                 new_j = j + actions(action, 2);
 
@@ -91,8 +87,9 @@ function [V, pi, policy_stable] = policy_improvement(R, pi, V, gamma, actions, n
                     new_j = j;
                 end
 
-                aux(action) = R(i, j) + gamma * V(new_i, new_j);
+                aux(action) = R(new_i, new_j) + gamma * V(new_i, new_j);
             end
+
             [~, pi(i,j)] = max(aux);
 
             if old_action ~= pi(i,j)
