@@ -35,7 +35,7 @@ while true
                     new_j = j;
                 end
 
-                aux(action) = R(i, j) + gamma * V(new_i, new_j);
+                aux(action) = R(new_i, new_j) + gamma * V(new_i, new_j);
             end
             
             [V(i, j), pi(i,j)] = max(aux);
