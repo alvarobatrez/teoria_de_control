@@ -32,18 +32,13 @@ for episode = 1 : num_episodes
             Q(index) = Q(index) + alpha * (G - Q(index));
             [~, A] = max(Q(states(t,1), states(t,2), :));
 
-            for a = 1 : num_actions
-                if a == A
-                    pi(states(t,1), states(t,2), a) = 1 - epsilon + epsilon / num_actions;
-                else
-                    pi(states(t,1), states(t,2), a) = epsilon / num_actions;
-                end
-            end
+            pi(states(t,1), states(t,2), :) = epsilon / num_actions;
+            pi(states(t,1), states(t,2), A) = 1 - epsilon + epsilon / num_actions;
         end
     end
 end
 
-[~, policy] = max(pi, [], 3);
+[~, policy] = max(Q, [], 3);
 policy(R==1) = 0;
 policy(R==0) = 0;
 

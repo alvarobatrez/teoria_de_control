@@ -8,12 +8,9 @@ actions_taken = [];
 rewards = [];
 
 while ~isequal(state, goal_position)
-
     states = [states; state];
-
     action_probabilities = squeeze(pi(i, j, :));
     action = randsample(1:num_actions, 1, true, action_probabilities);
-
     new_i = i + actions(action, 1);
     new_j = j + actions(action, 2);
 
