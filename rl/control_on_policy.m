@@ -23,12 +23,17 @@ for episode = 1 : num_episodes
     [states, actions_taken, rewards] = generate_episode(R, pi, start_position, [goal_row, goal_col], actions, num_actions, m, n);
     sa = [states actions_taken];
     G = 0;
+
+    visited = false(m, n, num_actions);
     
     for t = length(states) : -1 : 1
         G = gamma * G + rewards(t);
 
-        if ~ismember(sa(t,:), sa(1:t-1,:), 'rows')
-            index = sub2ind([m, n, num_actions], states(t,1), states(t,2), actions_taken(t));
+        index = sub2ind([m, n, num_actions], states(t,1), states(t,2), actions_taken(t));
+
+        if ~visited(index)
+            visited(index) = true;
+            
             N(index) = N(index) + 1;
             Q(index) = Q(index) + 1 / N(index) * (G - Q(index));
             [~, A] = max(Q(states(t,1), states(t,2), :));
