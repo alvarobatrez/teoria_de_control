@@ -3,6 +3,9 @@ close all; clear, clc
 R = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
+start_position = [1 1];
+[goal_row, goal_col] = find(R==0);
+
 [m, n] = size(R);
 num_actions = length(actions);
 
@@ -14,14 +17,11 @@ num_episodes = 1000;
 
 Q = zeros(m, n, num_actions);
 
-start_position = [1 1];
-[goal_row, goal_col] = find(R==0);
-
 for episode = 1 : num_episodes
     epsilon = max(0.1, decay*epsilon);
     state = start_position;
     action = egreedy_action(epsilon, Q, state, num_actions);
-
+    
     while ~isequal(state, [goal_row, goal_col])
         [next_state, reward] = step(R, state, action, actions, m, n);
         next_action = egreedy_action(epsilon, Q, next_state, num_actions);
@@ -29,12 +29,14 @@ for episode = 1 : num_episodes
         state = next_state;
         action = next_action;
     end
+
 end
 
 [~, policy] = max(Q, [], 3);
 policy(R==1) = 0;
 policy(R==0) = 0;
 
+clc
 disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
 disp('Politica Optima')
 disp(policy)
