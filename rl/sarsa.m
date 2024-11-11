@@ -29,7 +29,6 @@ for episode = 1 : num_episodes
         state = next_state;
         action = next_action;
     end
-
 end
 
 [~, policy] = max(Q, [], 3);
