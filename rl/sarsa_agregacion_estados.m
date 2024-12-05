@@ -10,21 +10,21 @@ alpha = 0.1;
 gamma = 0.99;
 epsilon = 1;
 decay = 0.99;
-num_episodes = 20000;
+num_episodes = 3000;
 
-bins_w = 1000;
-bins_v = 1000;
+bins_w = 1024;
+bins_v = 256;
 w_range = linspace(0, 20, bins_w);
 v_range = linspace(0, 1, bins_v);
 
-actions = [-0.01 0 0.01];
+actions = [-1/256 0 1/256];
 num_actions = length(actions);
 
 Q = zeros(bins_w, bins_v, num_actions);
 
 ref = 1;
-Ts = 0.001;
-t_steps = 1000;
+Ts = 0.01;
+t_steps = 100;
 
 sum_returns = zeros(num_episodes, 1);
 
