@@ -70,7 +70,8 @@ xlabel('Episodes'), ylabel('Returns'), title('Agregacion de Estados')
 w = 0;
 v = 0;
 i = 0;
-ref = 1;
+ref = 10;
+
 [~, policy] = max(Q, [], 3);
 draw_response(policy, actions, [w v i], w_range, v_range, t_steps, Ts, J, b, K, L, R)
 
