@@ -21,15 +21,17 @@ for epoch = 1 : epochs
         y = Y(i);
         
         % Propagacion hacia adelante
-        h = [1; sig(w1 * x)];
-        o = sig(w2 * h);
+        z1 = w1 * x;
+        h = [1; sig(z1)];
+        z2 = w2 * h;
+        o = sig(z2);
     
         % Calculo del error
         e = e + 0.5 * (y - o).^2;
 
         % Retropropagacion
-        delta_o = (o - y) * dsig(w2 * h);
-        delta_h = dsig(w1 * x) .* (w2(2:end)' * delta_o);
+        delta_o = (o - y) * dsig(z2);
+        delta_h = dsig(z1) .* (w2(2:end)' * delta_o);
 
         % Actualización de los pesos
         w2 = w2 - eta * delta_o * h';
@@ -46,11 +48,13 @@ disp(w2)
 
 disp('Resultados:')
 for i = 1 : length(X)
-    x = X(i,:);
+    x = X(i,:)';
     y = Y(i);
 
-    h = [1; sig(w1 * x')];
-    o = sig(w2 * h);
+    z1 = w1 * x;
+    h = [1; sig(z1)];
+    z2 = w2 * h;
+    o = sig(z2);
 
     fprintf('Entrada: [%d %d], Salida: %.1f\n', X(i,1), X(i,2), o)
 end
