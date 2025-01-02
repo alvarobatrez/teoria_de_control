@@ -26,6 +26,4 @@ function draw_maze(maze, agent_position, policy, exit)
         set(agent_marker, 'XData', agent_position(2), 'YData', agent_position(1));
         drawnow
     end
-
-    hold off
 end
