@@ -83,14 +83,6 @@ function state = discretize_state(observations, w_range, v_range)
     state = [w_index v_index];
 end
 
-function action = egreedy_action(epsilon, Q, state, num_actions)
-    if rand > epsilon
-        [~, action] = max(Q(state(1), state(2), :));
-    else
-        action = randi(num_actions);
-    end
-end
-
 function v = clamp_voltage(v, v_range)
     v = max(v_range(1), min(v, v_range(end)));
 end
