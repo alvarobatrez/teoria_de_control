@@ -3,12 +3,10 @@ close all; clear, clc
 eta = 0.1;
 epochs = 30000;
 
-X = [1 0 0;
-     1 0 1;
-     1 1 0;
-     1 1 1];
-
+X = [0 0; 0 1; 1 0; 1 1];
 Y = [1; 0; 0; 1];
+
+[m, ~] = size(X);
 
 w1 = rand(2, 3)*2-1;
 w2 = rand(1, 3)*2-1;
@@ -18,9 +16,11 @@ dsig = @(x) exp(-x) ./ (1 + exp(-x)).^2;
 
 error = zeros(epochs, 1);
 
+X = [ones(m, 1) X];
+
 for epoch = 1 : epochs
     e = 0;
-    for i = 1 : length(X)
+    for i = 1 : m
         x = X(i,:)';
         y = Y(i);
         
@@ -35,7 +35,7 @@ for epoch = 1 : epochs
 
         % Retropropagacion
         delta_o = (o - y) * dsig(z2);
-        delta_h = dsig(z1) .* (w2(2:end)' * delta_o);
+        delta_h = dsig(z1) .* (w2(:,2:end)' * delta_o);
 
         % Actualización de los pesos
         w2 = w2 - eta * delta_o * h';
