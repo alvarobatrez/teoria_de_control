@@ -1,67 +1,66 @@
 close all; clear, clc
 
-eta = 0.1;
-epochs = 30000;
-
 X = [0 0; 0 1; 1 0; 1 1];
 Y = [1; 0; 0; 1];
 
-[m, ~] = size(X);
+[m, n] = size(X);
 
-w1 = rand(2, 3)*2-1;
-w2 = rand(1, 3)*2-1;
+learning_rate = 0.1;
+epochs = 1e4;
 
-sig = @(x) 1 ./ (1 + exp(-x));
-dsig = @(x) exp(-x) ./ (1 + exp(-x)).^2;
+layers = [16 4 1]; % 2 capas ocultas y 1 capa de salida
 
-error = zeros(epochs, 1);
+w1 = randn(layers(1), n+1);
+w2 = randn(layers(2), layers(1)+1);
+w3 = randn(layers(3), layers(2)+1);
 
-X = [ones(m, 1) X];
+total_loss = zeros(epochs, 1);
+
+X = [ones(m, 1) X]; % sesgo
 
 for epoch = 1 : epochs
-    e = 0;
+    loss = 0;
     for i = 1 : m
-        x = X(i,:)';
-        y = Y(i);
-        
+        x = X(i, :)';
+        y = Y(i, :)';
+
         % Propagacion hacia adelante
         z1 = w1 * x;
-        h = [1; sig(z1)];
-        z2 = w2 * h;
-        o = sig(z2);
-    
-        % Calculo del error
-        e = e + 0.5 * (y - o).^2;
+        a1 = [1; sigmoid(z1)];
+        z2 = w2 * a1;
+        a2 = [1; sigmoid(z2)];
+        z3 = w3 * a2;
+        y_pred = sigmoid(z3);
 
-        % Retropropagacion
-        delta_o = (o - y) * dsig(z2);
-        delta_h = dsig(z1) .* (w2(:,2:end)' * delta_o);
+        % Error cuadratico medio MSE
+        loss = loss + sum(0.5 * (y_pred - y).^2);
+
+        % Retropropagacion (gradiente descendente)
+        delta3 = sigmoid_derivative(y_pred) .* (y_pred - y);
+        delta2 = sigmoid_derivative(a2(2:end)) .* (w3(:,2:end)' * delta3);
+        delta1 = sigmoid_derivative(a1(2:end)) .* (w2(:,2:end)' * delta2);
 
         % Actualización de los pesos
-        w2 = w2 - eta * delta_o * h';
-        w1 = w1 - eta * delta_h * x';
+        w1 = w1 - learning_rate * delta1 * x';
+        w2 = w2 - learning_rate * delta2 * a1';
+        w3 = w3 - learning_rate * delta3 * a2';
     end
 
-    error(epoch) = e;
+    total_loss(epoch) = loss / m;
 end
-
-disp('Pesos capa oculta:')
-disp(w1)
-disp('Pesos capa salida:')
-disp(w2)
 
 disp('Resultados:')
-for i = 1 : length(X)
-    x = X(i,:)';
-    y = Y(i);
+for i = 1 : m
+    x = X(i, :)';
 
     z1 = w1 * x;
-    h = [1; sig(z1)];
-    z2 = w2 * h;
-    o = sig(z2);
-
-    fprintf('Entrada: [%d %d], Salida: %.1f\n', X(i,1), X(i,2), o)
+    a1 = [1; sigmoid(z1)];
+    z2 = w2 * a1;
+    a2 = [1; sigmoid(z2)];
+    z3 = w3 * a2;
+    y_pred = sigmoid(z3)';
+    fprintf('Entrada: [%d %d], Salida: [%.1f]\n', X(i,2:end), y_pred)
 end
 
-plot(1:epochs, error)
-title('Función Costo'), xlabel('Epocas'), ylabel('Error'), grid on
+plot(1:epochs, total_loss), grid on
+title('Función Costo'), xlabel('Epocas'), ylabel('Error MSE')
