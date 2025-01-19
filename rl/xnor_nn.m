@@ -3,22 +3,22 @@ close all; clear, clc
 X = [0 0; 0 1; 1 0; 1 1];
 Y = [1; 0; 0; 1];
 
-layers = {{16, 'sigmoid'} {4, 'sigmoid'} {1, 'sigmoid'}};
-epochs = 1e4;
-optimizer = 'sgd';
-loss_function = 'mse';
+[~, num_inputs] = size(X);
 
-[m, num_inputs] = size(X);
+eta = 0.001;
+optimizer = 'adam';
+loss_function = 'mse';
+epochs = 1000;
+
+layers = {{10, 'relu'} {10, 'relu'} {1, 'sigmoid'}};
 
 model = NeuralNetwork(num_inputs, layers);
-model = model.compile(optimizer, loss_function);
+model = model.compile(eta, optimizer, loss_function);
 [model, history] = model.train(X, Y, epochs);
+y_pred = model.predict(X);
 
-disp('Resultados:')
-for i = 1 : m
-    y_pred = model.predict(X(i,:));
-    fprintf('Entrada: [%d %d], Salida: [%.2f]\n', X(i,:), y_pred)
-end
+disp('Resultados')
+disp(y_pred)
 
-plot(1:epochs, history), grid on
-title('Función Costo'), xlabel('Epocas'), ylabel('Error (MSE)')
+plot(1:epochs, history), title('Función Costo')
+xlabel('Épocas'), ylabel('Error (MSE)')
