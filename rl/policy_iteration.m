@@ -1,23 +1,23 @@
 close all; clear, clc
 
 M = create_maze();
-[goal_row, goal_col] = find(M==0);
+[goal_row, goal_col] = find(M==10);
 actions = [-1 0; 0 1; 1 0; 0 -1]; % arriba, derecha, abajo, izquierda
 
 [m, n] = size(M);
 num_actions = length(actions);
 
-pi = randi(num_actions, m, n);
-pi(M==-2) = 0;
-pi(M==10) = 0;
+policy = randi(num_actions, m, n);
+policy(M==-2) = 0;
+policy(M==10) = 0;
 V = zeros(m, n);
 
 theta = 1e-6;
 gamma = 0.99;
 
 while true
-    V = policy_evaluation(M, pi, V, theta, gamma, actions, m ,n);
-    [V, pi, policy_stable] = policy_improvement(M, pi, V, gamma, actions, num_actions, m, n);
+    V = policy_evaluation(M, policy, V, theta, gamma, actions, m ,n);
+    [V, policy, policy_stable] = policy_improvement(M, policy, V, gamma, actions, num_actions, m, n);
 
     if policy_stable == true
         break
@@ -26,12 +26,12 @@ end
 
 disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
 disp('Politica Optima')
-disp(pi)
+disp(policy)
 
 draw_heatmap(V)
 
 start_position = [1 2];
-draw_maze(M, start_position, pi, [goal_row goal_col])
+draw_maze(M, start_position, policy, [goal_row goal_col])
 
 function V = policy_evaluation(M, pi, V, theta, gamma, actions, m, n)
     while true
@@ -39,7 +39,7 @@ function V = policy_evaluation(M, pi, V, theta, gamma, actions, m, n)
 
         for i = 1 : m
             for j = 1 : n
-                if M(i, j) == -2 || M(i, j) == 0
+                if M(i, j) == -2 || M(i, j) == 10
                     continue
                 end
                 
@@ -69,7 +69,7 @@ function [V, pi, policy_stable] = policy_improvement(M, pi, V, gamma, actions, n
 
     for i = 1 : m
         for j = 1 : n
-            if M(i, j) == -2 || M(i, j) == 0
+            if M(i, j) == -2 || M(i, j) == 10
                 continue
             end
 
@@ -95,11 +95,4 @@ function [V, pi, policy_stable] = policy_improvement(M, pi, V, gamma, actions, n
             end
         end
     end
-end
-
-function draw_heatmap(V)
-    h = heatmap(V);
-    h.ColorbarVisible = 'off';
-    colormap(h, 'hot')
-    title('Función de Valor')
 end
