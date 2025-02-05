@@ -1,4 +1,4 @@
-clear, clc
+close all; clear, clc
 
 R = [0 -1 -1 -1; -1 -1 -1 -1; -1 -1 -1 -1; -1 -1 -1 0];
 actions = [-1 0; 0 1; 1 0; 0 -1];
@@ -31,7 +31,7 @@ while true
                 new_i = i + actions(action, 1);
                 new_j = j + actions(action, 2);
             
-                if ~(new_i >= 1 && new_i <= m && new_j >=1 && new_j <= n)
+                if new_i < 1 || new_i > m || new_j < 1 || new_j > n
                     new_i = i;
                     new_j = j;
                 end
