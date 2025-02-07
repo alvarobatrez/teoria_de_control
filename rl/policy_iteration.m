@@ -24,10 +24,6 @@ while true
     end
 end
 
-disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
-disp('Politica Optima')
-disp(policy)
-
 V(M==10) = 10;
 draw_heatmap(V)
 
@@ -95,7 +91,9 @@ function [V, pi, policy_stable] = policy_improvement(M, pi, V, gamma, actions, n
                 action_values(action) = reward + gamma * V(new_i, new_j);
             end
 
-            [~, pi(i, j)] = max(action_values);
+            max_val = max(action_values);
+            best_actions = find(action_values == max_val);
+            pi(i, j) = best_actions(randi(length(best_actions)));
 
             if old_action ~= pi(i, j)
                 policy_stable = false;

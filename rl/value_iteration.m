@@ -24,7 +24,7 @@ while true
             end
 
             v = V(i, j);
-            aux = zeros(1, num_actions);
+            action_values = zeros(1, num_actions);
 
             for action = 1 : num_actions
 
@@ -39,10 +39,13 @@ while true
                     reward = M(new_i, new_j);
                 end
 
-                aux(action) = reward + gamma * V(new_i, new_j);
+                action_values(action) = reward + gamma * V(new_i, new_j);
             end
 
-            [V(i, j), policy(i, j)] = max(aux);
+            [max_val, best_actions] = max(action_values);
+            V(i, j) = max_val;
+            policy(i, j) = best_actions(randi(length(best_actions)));
+
             delta = max(delta, abs(v - V(i, j)));
         end
     end
@@ -51,10 +54,6 @@ while true
         break
     end
 end
-
-disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
-disp('Politica Optima')
-disp(policy)
 
 V(M==10) = 10;
 draw_heatmap(V)
