@@ -8,7 +8,7 @@ num_actions = length(actions);
 
 prob = 0.25;
 theta = 0.001;
-gamma = 1;
+gamma = 0.9;
 
 V = zeros(m, n);
 Vp = zeros(m, n);
@@ -36,7 +36,7 @@ while true
                     new_j = j;
                 end
         
-                suma = suma + prob * (R(i, j) + gamma * Vp(new_i, new_j));
+                suma = suma + prob * (R(new_i, new_j) + gamma * Vp(new_i, new_j));
             end
             
             V(i,j) = suma;
@@ -54,5 +54,5 @@ end
 disp('Matriz de Recompensas')
 disp(R)
 
-disp('Funcion de Valor')
+disp('Función de Valor')
 disp(V)
