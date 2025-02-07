@@ -32,11 +32,14 @@ while true
                 new_j = j + actions(action, 2);
 
                 if new_i < 1 || new_i > m || new_j < 1 || new_j > n || M(new_i, new_j) == -2
+                    reward = -2;
                     new_i = i;
                     new_j = j;
+                else
+                    reward = M(new_i, new_j);
                 end
 
-                aux(action) = M(new_i, new_j) + gamma * V(new_i, new_j);
+                aux(action) = reward + gamma * V(new_i, new_j);
             end
 
             [V(i, j), policy(i, j)] = max(aux);
@@ -53,6 +56,7 @@ disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
 disp('Politica Optima')
 disp(policy)
 
+V(M==10) = 10;
 draw_heatmap(V)
 
 start_position = [1 2];

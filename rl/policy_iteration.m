@@ -28,6 +28,7 @@ disp('Acciones: 1=arriba, 2=derecha, 3=abajo, 4=izquierda')
 disp('Politica Optima')
 disp(policy)
 
+V(M==10) = 10;
 draw_heatmap(V)
 
 start_position = [1 2];
@@ -49,11 +50,14 @@ function V = policy_evaluation(M, pi, V, theta, gamma, actions, m, n)
                 new_j = j + actions(action, 2);
 
                 if new_i < 1 || new_i > m || new_j < 1 || new_j > n || M(new_i, new_j) == -2
+                    reward = -2;
                     new_i = i;
                     new_j = j;
+                else
+                    reward = M(new_i, new_j);
                 end
 
-                V(i, j) = M(new_i, new_j) + gamma * V(new_i, new_j);
+                V(i, j) = reward + gamma * V(new_i, new_j);
                 delta = max(delta, abs(v - V(i,j)));
             end
         end
@@ -74,21 +78,24 @@ function [V, pi, policy_stable] = policy_improvement(M, pi, V, gamma, actions, n
             end
 
             old_action = pi(i, j);
-            aux = zeros(1, num_actions);
+            action_values = zeros(1, num_actions);
             
             for action = 1 : num_actions
                 new_i = i + actions(action, 1);
                 new_j = j + actions(action, 2);
 
                 if new_i < 1 || new_i > m || new_j < 1 || new_j > n || M(new_i, new_j) == -2
+                    reward = -2;
                     new_i = i;
                     new_j = j;
+                else
+                    reward = M(new_i, new_j);
                 end
 
-                aux(action) = M(new_i, new_j) + gamma * V(new_i, new_j);
+                action_values(action) = reward + gamma * V(new_i, new_j);
             end
 
-            [~, pi(i, j)] = max(aux);
+            [~, pi(i, j)] = max(action_values);
 
             if old_action ~= pi(i, j)
                 policy_stable = false;
