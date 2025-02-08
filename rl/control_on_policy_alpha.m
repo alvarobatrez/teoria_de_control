@@ -9,6 +9,7 @@ start_position = [1 2];
 [m, n] = size(M);
 num_actions = length(actions);
 
+alpha = 0.1;
 gamma = 0.99;
 epsilon = 1;
 decay = 0.99;
@@ -17,7 +18,6 @@ max_steps = 1e4;
 
 pi = ones(m, n, num_actions) / num_actions;
 Q = zeros(m, n, num_actions);
-N = zeros(m, n, num_actions);
 
 for episode = 1 : num_episodes
     epsilon = max(0.1, decay*epsilon);
@@ -34,8 +34,7 @@ for episode = 1 : num_episodes
         if ~visited(index)
             visited(index) = true;
 
-            N(index) = N(index) + 1;
-            Q(index) = Q(index) + 1 / N(index) * (G - Q(index));
+            Q(index) = Q(index) + alpha * (G - Q(index));
 
             max_value = max(Q(states(t, 1), states(t, 2), :));
             best_actions = find(max_value == Q(states(t, 1), states(t, 2), :));
