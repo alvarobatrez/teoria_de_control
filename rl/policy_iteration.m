@@ -92,7 +92,7 @@ function [V, pi, policy_stable] = policy_improvement(M, pi, V, gamma, actions, n
             end
 
             max_val = max(action_values);
-            best_actions = find(action_values == max_val);
+            best_actions = find(max_val == action_values);
             pi(i, j) = best_actions(randi(length(best_actions)));
 
             if old_action ~= pi(i, j)

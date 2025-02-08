@@ -42,7 +42,8 @@ while true
                 action_values(action) = reward + gamma * V(new_i, new_j);
             end
 
-            [max_val, best_actions] = max(action_values);
+            max_val = max(action_values);
+            best_actions = find(max_val == action_values);
             V(i, j) = max_val;
             policy(i, j) = best_actions(randi(length(best_actions)));
 

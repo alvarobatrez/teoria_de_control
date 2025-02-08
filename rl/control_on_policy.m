@@ -36,11 +36,15 @@ for episode = 1 : num_episodes
             N(index) = N(index) + 1;
             Q(index) = Q(index) + 1 / N(index) * (G - Q(index));
 
-            [~, A] = max(Q(states(t, 1), states(t, 2), :));
+            max_value = max(Q(states(t, 1), states(t, 2), :));
+            best_actions = find(max_value == Q(states(t, 1), states(t, 2), :));
+            A = best_actions(randi(length(best_actions)));
+
             pi(states(t, 1), states(t, 2), :) = epsilon / num_actions;
             pi(states(t, 1), states(t, 2), A) = 1 - epsilon + epsilon / num_actions;
         end
     end
+    
     fprintf('Episodio: %d\n', episode)
 end
 
@@ -50,4 +54,4 @@ policy(M==10) = 0;
 
 plot_q_values(Q)
 
-draw_maze(M, start_position, policy, [goal_col goal_row])
+draw_maze(M, start_position, policy, [goal_row goal_col])
