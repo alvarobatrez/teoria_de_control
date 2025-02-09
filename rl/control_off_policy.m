@@ -53,7 +53,7 @@ for episode = 1 : num_episodes
     mu(states(t,1), states(t,2), :) = epsilon / num_actions;
     mu(states(t,1), states(t,2), A) = 1 - epsilon + epsilon / num_actions;
 
-    fprintf('Episodio: %d, Pasos: %d\n', episode, length(actions_taken))
+    fprintf('Episodio: %d\n', episode)
 end
 
 [~, policy] = max(Q, [], 3);
