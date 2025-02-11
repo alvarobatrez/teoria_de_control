@@ -17,7 +17,7 @@ actions = [-0.01 0 0.01];
 num_actions = length(actions);
 
 ref = 10;
-Ts = 0.001;
+Ts = 0.01;
 T = 1;
 t_steps = T / Ts;
 
@@ -87,6 +87,19 @@ function v = clamp_voltage(v, v_min, v_max)
     v = max(v_min, min(v, v_max));
 end
 
+function dx = motor(x, J, b, K, L, R, v)
+    dx1 = -b/J*x(1) + K/J*x(2);
+    dx2 = -K/L*x(1) - R/L*x(2) + v/L;
+    dx = [dx1; dx2];
+end
+
+function [w, i] = simulate_motor(state, Ts, J, b, K, L, R, v)
+    fun = @(t,x) motor(x, J, b, K, L, R, v);
+    [~, x] = ode45(fun, [0 Ts], state);
+    w = x(end, 1);
+    i = x(end, 2);
+end
+
 function draw_response(policy, actions, initial_conditions, range_v, range_w, v_min, v_max, t_steps, Ts, J, b, K, L, R)
     v = initial_conditions(1);
     w = initial_conditions(2);
@@ -108,17 +121,4 @@ function draw_response(policy, actions, initial_conditions, range_v, range_w, v_
     t = (0 : t_steps-1) * Ts;
     figure, plot(t, vel_motor)
     xlabel('Tiempo'), ylabel('Velocidad angular'), title('Motor DC')
-end
-
-function dx = motor(x, J, b, K, L, R, v)
-    dx1 = -b/J*x(1) + K/J*x(2);
-    dx2 = -K/L*x(1) - R/L*x(2) + v/L;
-    dx = [dx1; dx2];
-end
-
-function [w, i] = simulate_motor(state, Ts, J, b, K, L, R, v)
-    fun = @(t,x) motor(x, J, b, K, L, R, v);
-    [~, x] = ode23(fun, [0 Ts], state);
-    w = x(end, 1);
-    i = x(end, 2);
 end
