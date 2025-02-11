@@ -24,7 +24,7 @@ t_steps = T / Ts;
 alpha = 0.1;
 gamma = 0.99;
 epsilon = 1;
-decay = 0.995;
+decay = 0.99;
 num_episodes = 2000;
 
 Q = zeros(bins_v, bins_w, num_actions);
@@ -32,7 +32,7 @@ Q = zeros(bins_v, bins_w, num_actions);
 sum_returns = zeros(num_episodes, 1);
 
 for episode = 1 : num_episodes
-    epsilon = max(0.1, decay*epsilon);
+    epsilon = max(0.01, decay*epsilon);
 
     v = 0;
     w = 0;
@@ -119,6 +119,6 @@ function draw_response(policy, actions, initial_conditions, range_v, range_w, v_
     end
 
     t = (0 : t_steps-1) * Ts;
-    figure, plot(t, vel_motor)
+    figure, plot(t, vel_motor), grid on
     xlabel('Tiempo'), ylabel('Velocidad angular'), title('Motor DC')
 end
