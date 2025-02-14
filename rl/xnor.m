@@ -7,7 +7,7 @@ Y = [1; 0; 0; 1];
 [~, num_outputs] = size(Y);
 
 learning_rate = 0.1;
-epochs = 5000;
+epochs = 10000;
 
 layers = [10 10 1]; % 2 capas ocultas y 1 capa de salida
 
@@ -38,9 +38,9 @@ for epoch = 1 : epochs
     delta1 = sigmoid_derivative(a1(:, 2:end)) .* (delta2 * w2(:,2:end));
 
     % Actualización de los pesos
-    w1 = w1 - learning_rate * delta1' * x;
-    w2 = w2 - learning_rate * delta2' * a1;
-    w3 = w3 - learning_rate * delta3' * a2;
+    w3 = w3 - learning_rate/m * delta3' * a2;
+    w2 = w2 - learning_rate/m * delta2' * a1;
+    w1 = w1 - learning_rate/m * delta1' * x;
 end
 
 disp('Resultados:')
@@ -51,7 +51,7 @@ a2 = [ones(1, size(z1, 2)); sigmoid(z2)]';
 z3 = w3 * a2';
 y_pred = sigmoid(z3)';
 for i = 1 : 4
-    fprintf('Entrada: [%d %d], Salida: %.1f\n',x(i,2), x(i,3), y_pred(i))  
+    fprintf('Entrada: [%d %d], Salida: %.2f\n',x(i,2), x(i,3), y_pred(i))  
 end
 
 plot(1:epochs, total_loss), grid on
