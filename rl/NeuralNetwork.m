@@ -12,7 +12,7 @@ classdef NeuralNetwork
         weight_decay
         m
         v
-        t
+        t = 0
     end
 
     methods
