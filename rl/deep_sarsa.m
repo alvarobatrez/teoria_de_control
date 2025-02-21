@@ -13,11 +13,10 @@ tau = 0.005;
 gamma = 0.99;
 epsilon = 1;
 decay = 0.995;
-num_episodes = 1000;
-max_steps = 1e5;
+num_episodes = 2500;
 
 buffer_capacity = 1e5;
-batch_size = 64;
+batch_size = 32;
 buffer = ExperienceReplay(buffer_capacity);
 
 num_inputs = 2;
@@ -25,7 +24,7 @@ learning_rate = 0.001;
 optimizer = 'adamW';
 loss_function = 'mse';
 
-layers = {{128, 'relu'} {64, 'relu'} {4, 'linear'}};
+layers = {{8, 'relu'} {8, 'relu'} {4, 'linear'}};
 
 model = NeuralNetwork(num_inputs, layers);
 model = model.compile(learning_rate, optimizer, loss_function);
@@ -34,13 +33,16 @@ model_target = NeuralNetwork(num_inputs, layers);
 model_target = model_target.compile(learning_rate, optimizer, loss_function);
 model_target = copy_weights(model, model_target);
 
+total_returns = zeros(num_episodes, 1);
+total_loss = zeros(num_episodes, 1);
+
 for episode = 1 : num_episodes
-    epsilon = max(0.1, decay*epsilon);
+    epsilon = max(0.01, decay*epsilon);
     state = start_position;
-    steps = 0;
+    returns = 0;
+    loss_ep = 0;
     
-    while ~isequal(state, [goal_row goal_col]) && steps < max_steps
-        steps = steps + 1;
+    while ~isequal(state, [goal_row goal_col])
         action = egreedy_action(epsilon, model, state, num_actions);
         [next_state, reward] = step(M, state, action, actions, m, n);
         buffer = buffer.insert([state action reward next_state]);
@@ -56,24 +58,29 @@ for episode = 1 : num_episodes
             done(ind) = 1;
             target_b = reward_b + ~done .* gamma .* next_q_b;
 
+            loss_ep = loss_ep + mean((q_b - target_b).^2);
+
             predictions = model.predict(state_b);
-            target_q = predictions;
+            indices = sub2ind(size(predictions), (1 : batch_size)', action_b);
+            predictions(indices) = target_b;
 
-            for i = 1 : batch_size
-                target_q(i, action_b(i)) = target_b(i);
-            end
+            model = backpropagation(model, state_b, predictions, batch_size);
 
-            model = backpropagation(model, state_b, target_q, batch_size);
+            model_target = update_model_target(model, model_target, tau);
         end
 
         state = next_state;
+        returns = returns + reward;
     end
 
-    for i = 1 : model.num_layers
-        model_target.layers{i}.weights = tau * model.layers{i}.weights + (1 - tau) * model_target.layers{i}.weights;
-    end
+    total_returns(episode) = returns;
+    total_loss(episode) = loss_ep;
+
+    subplot(2,1,1), semilogy(1:num_episodes, total_returns), title('Retornos'), xlim([0 episode]), grid on
+    subplot(2,1,2), semilogy(1:num_episodes, total_loss), title('Función Costo'), xlim([0 episode]), grid on
+    pause(0.1)
     
-    fprintf('Episodio: %d, Pasos: %d\n', episode, steps)
+    fprintf('Episodio: %d, Retorno: %d, Costo: %.4f\n', episode, returns, loss_ep)
 end
 
 policy = create_policy(model, M);
@@ -119,6 +126,12 @@ function model = backpropagation(model, X, Y, batch_size)
     outputs = forward(model, X);
     grad = model.compute_gradients(batch_size, outputs, Y);
     model = model.update_weights(grad);
+end
+
+function model_target = update_model_target(model, model_target, tau)
+    for i = 1 : model.num_layers
+        model_target.layers{i}.weights = tau * model.layers{i}.weights + (1 - tau) * model_target.layers{i}.weights;
+    end
 end
 
 function policy = create_policy(model, M)

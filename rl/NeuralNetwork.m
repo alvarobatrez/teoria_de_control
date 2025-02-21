@@ -41,11 +41,11 @@ classdef NeuralNetwork
             if strcmp(optimizer, 'adam')
                 model.beta1 = 0.9;
                 model.beta2 = 0.999;
-                model.epsilon = 1e-7;
+                model.epsilon = 1e-8;
             elseif strcmp(optimizer, 'adamW')
                 model.beta1 = 0.9;
                 model.beta2 = 0.999;
-                model.epsilon = 1e-7;
+                model.epsilon = 1e-8;
                 model.weight_decay = 0.01;
             end
         end
