@@ -1,6 +1,6 @@
 close all; clear, clc
 
-M = create_maze();
+M = create_maze_small();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
 start_position = [1 2];
@@ -23,7 +23,7 @@ for episode = 1 : num_episodes
     
     while ~isequal(state, [goal_row goal_col])
         action = egreedy_action(epsilon, Q, state, num_actions);
-        [next_state, reward] = step(M, state, action, actions, m, n);
+        [next_state, reward, ~] = step(M, state, action, actions, m, n);
         next_action = egreedy_action(epsilon, Q, next_state, num_actions);
         Q(state(1), state(2), action) = Q(state(1), state(2), action) + ...
             alpha * (reward + gamma * Q(next_state(1), next_state(2), next_action) - Q(state(1), state(2), action));

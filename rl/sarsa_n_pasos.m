@@ -36,7 +36,7 @@ for episode = 1 : num_episodes
     while true
         
         if t < T
-            [next_state, reward] = step(M, state, action, actions, m, n);
+            [next_state, reward, ~] = step(M, state, action, actions, m, n);
             states(end + 1, :) = next_state;
             rewards(end + 1) = reward;
 
