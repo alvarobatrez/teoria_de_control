@@ -1,6 +1,6 @@
 close all; clear, clc
 
-M = create_maze();
+M = create_maze_small();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
 start_position = [1 2];
@@ -9,81 +9,64 @@ start_position = [1 2];
 [m, n] = size(M);
 num_actions = length(actions);
 
-tau = 0.005;
-gamma = 0.99;
+gamma = 0.9;
 epsilon = 1;
-decay = 0.995;
-num_episodes = 2500;
+decay = 0.99;
+num_episodes = 1000;
 
-buffer_capacity = 1e5;
-batch_size = 32;
+buffer_capacity = 1e2;
+batch_size = 8;
 buffer = ExperienceReplay(buffer_capacity);
 
 num_inputs = 2;
+layers = {{8, 'relu'} {4, 'linear'}};
+
 learning_rate = 0.001;
-optimizer = 'adamW';
+optimizer = 'adam';
 loss_function = 'mse';
 
-layers = {{8, 'relu'} {8, 'relu'} {4, 'linear'}};
+q_network = NeuralNetwork(num_inputs, layers);
+q_network = q_network.compile(learning_rate, optimizer, loss_function);
 
-model = NeuralNetwork(num_inputs, layers);
-model = model.compile(learning_rate, optimizer, loss_function);
-
-model_target = NeuralNetwork(num_inputs, layers);
-model_target = model_target.compile(learning_rate, optimizer, loss_function);
-model_target = copy_weights(model, model_target);
-
-total_returns = zeros(num_episodes, 1);
-total_loss = zeros(num_episodes, 1);
+target_network = NeuralNetwork(num_inputs, layers);
+target_network = target_network.compile(learning_rate, optimizer, loss_function);
+target_network = copy_weights(q_network, target_network);
 
 for episode = 1 : num_episodes
-    epsilon = max(0.01, decay*epsilon);
+    epsilon = max(0.1, decay*epsilon);
     state = start_position;
-    returns = 0;
-    loss_ep = 0;
+    loss = 0;
     
     while ~isequal(state, [goal_row goal_col])
-        action = egreedy_action(epsilon, model, state, num_actions);
-        [next_state, reward] = step(M, state, action, actions, m, n);
-        buffer = buffer.insert([state action reward next_state]);
-        
+        action = egreedy_action(epsilon, q_network, state, num_actions);
+        [next_state, reward, done] = step(M, state, action, actions, m, n);
+
+        buffer = buffer.insert([state action reward done next_state]);
+
         if buffer.can_sample(batch_size) == true
             sample = buffer.sample(batch_size);
-            [state_b, action_b, reward_b, next_state_b] = split_sample(sample, batch_size, num_inputs);
-            q_b = gather_q(model, state_b, action_b, batch_size);
-            next_action_b = egreedy_action(epsilon, model, next_state_b, num_actions);
-            next_q_b = gather_q(model_target, next_state_b, next_action_b, batch_size);
-            done = zeros(batch_size, 1);
-            ind = find(all(next_state_b == [goal_row goal_col], 2));
-            done(ind) = 1;
-            target_b = reward_b + ~done .* gamma .* next_q_b;
+            [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample);
+            
+            next_action_b = egreedy_action(epsilon, q_network, next_state_b, num_actions);
+            next_q_b = gather_q(target_network, next_state_b, next_action_b, batch_size);
+            target_b = reward_b + (1 - done_b) * gamma .* next_q_b;
 
-            loss_ep = loss_ep + mean((q_b - target_b).^2);
-
-            predictions = model.predict(state_b);
-            indices = sub2ind(size(predictions), (1 : batch_size)', action_b);
-            predictions(indices) = target_b;
-
-            model = backpropagation(model, state_b, predictions, batch_size);
-
-            model_target = update_model_target(model, model_target, tau);
-        end
-
+            q_b = gather_q(q_network, state_b, action_b, batch_size);
+            loss = loss + mean((target_b - q_b).^2);
+            q_network = backpropagation(q_network, batch_size, state_b, target_b, action_b);
+        end        
+        
         state = next_state;
-        returns = returns + reward;
     end
 
-    total_returns(episode) = returns;
-    total_loss(episode) = loss_ep;
-
-    subplot(2,1,1), semilogy(1:num_episodes, total_returns), title('Retornos'), xlim([0 episode]), grid on
-    subplot(2,1,2), semilogy(1:num_episodes, total_loss), title('Función Costo'), xlim([0 episode]), grid on
-    pause(0.1)
+    if mod(episode, 10) == 0
+        target_network = copy_weights(q_network, target_network);
+    end
     
-    fprintf('Episodio: %d, Retorno: %d, Costo: %.4f\n', episode, returns, loss_ep)
+    fprintf('Episodio: %d, Pérdida: %.4f\n', episode, loss)
 end
 
-policy = create_policy(model, M);
+policy = create_policy(q_network, M);
 
 draw_maze(M, start_position, policy, [goal_row goal_col])
 
@@ -102,36 +85,50 @@ function action = egreedy_action(epsilon, model, state, num_actions)
     end
 end
 
-function [state_b, action_b, reward_b, next_state_b] = split_sample(sample, batch_size, num_inputs)
-    state_b = zeros(batch_size, num_inputs);
-    action_b = zeros(batch_size, 1);
-    reward_b = zeros(batch_size, 1);
-    next_state_b = zeros(batch_size, num_inputs);
-
-    for i = 1 : batch_size
-        state_b(i, :) = sample{i}(1 : num_inputs);
-        action_b(i, :) = sample{i}(num_inputs + 1);
-        reward_b(i, :) = sample{i}(num_inputs + 2);
-        next_state_b(i, :) = sample{i}(num_inputs + 3 : end);
-    end
+function [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample)
+    sample_reshaped = reshape(cell2mat(sample), 7, [])';
+    state_b = sample_reshaped(:, 1:2);
+    action_b = sample_reshaped(:, 3);
+    reward_b = sample_reshaped(:, 4);
+    done_b = sample_reshaped(:, 5);
+    next_state_b = sample_reshaped(:, 6:7);
 end
 
 function q = gather_q(model, state, action, batch_size)
-    predictions = model.predict(state);
-    indices = sub2ind(size(predictions), (1 : batch_size)', action);
-    q = predictions(indices);
+    q_values = model.predict(state);
+    indices = sub2ind(size(q_values), (1 : batch_size)', action);
+    q = q_values(indices);
 end
 
-function model = backpropagation(model, X, Y, batch_size)
-    outputs = forward(model, X);
-    grad = model.compute_gradients(batch_size, outputs, Y);
-    model = model.update_weights(grad);
-end
+function grad = compute_loss_gradients(model, batch_size, state, target, action)
+    delta = cell(1, model.num_layers);
+    outputs = model.forward(state);
 
-function model_target = update_model_target(model, model_target, tau)
-    for i = 1 : model.num_layers
-        model_target.layers{i}.weights = tau * model.layers{i}.weights + (1 - tau) * model_target.layers{i}.weights;
+    q_values = outputs{end};
+    indices = sub2ind(size(q_values), (1 : batch_size)', action);
+    q_values(indices) = target;
+
+    delta{end} = 2 * (outputs{end} - q_values) / batch_size;
+
+    for i = model.num_layers - 1 : -1 : 1
+        layer_activation = model.layers{i}.activation;
+        a = outputs{i+1};
+        derivative = model.activation_derivative(layer_activation, a);
+        
+        w = model.layers{i + 1}.weights(:, 2:end);
+        delta{i} = derivative .* (delta{i + 1} * w);
     end
+
+    grad = cell(1, model.num_layers);
+
+    for i = 1 : model.num_layers
+        grad{i} = (1 / batch_size) * delta{i}' * [ones(batch_size, 1), outputs{i}];
+    end
+end
+
+function model = backpropagation(model, batch_size, state, target, action)
+    grad = compute_loss_gradients(model, batch_size, state, target, action);
+    model = model.update_weights(grad);
 end
 
 function policy = create_policy(model, M)

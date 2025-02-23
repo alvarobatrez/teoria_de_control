@@ -1,6 +1,6 @@
 close all; clear, clc
 
-M = create_maze_small();
+M = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
 start_position = [1 2];
