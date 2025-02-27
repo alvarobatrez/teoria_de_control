@@ -1,6 +1,6 @@
 close all; clear, clc
 
-M = create_maze();
+M = create_maze_small();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
 start_position = [1 2];
@@ -12,16 +12,16 @@ num_actions = length(actions);
 tau = 0.005;
 gamma = 0.99;
 epsilon = 1;
-decay = 0.995;
-num_episodes = 2500;
+decay = 0.95;
+num_episodes = 500;
 max_steps = 1e5;
 
 buffer_capacity = 1e6;
-batch_size = 32;
+batch_size = 128;
 buffer = ExperienceReplay(buffer_capacity);
 
 num_inputs = 2;
-layers = {{128, 'relu'} {32, 'relu'} {8, 'relu'} {4, 'linear'}};
+layers = {{128, 'relu'} {64, 'relu'} {4, 'linear'}};
 
 learning_rate = 0.001;
 optimizer = 'adam';
@@ -35,15 +35,17 @@ target_network = target_network.compile(learning_rate, optimizer, loss_function)
 target_network = copy_weights(q_network, target_network);
 
 total_loss = zeros(num_episodes, 1);
+total_returns = zeros(num_episodes, 1);
 
 for episode = 1 : num_episodes
     epsilon = max(0.1, decay*epsilon);
     state = start_position;
     steps = 0;
     loss = 0;
+    G = 0;
     n = 0;
     
-    while ~isequal(state, [goal_row goal_col]) && steps < max_steps
+    while ~isequal(state, [goal_row goal_col])% && steps < max_steps
         steps = steps + 1;
         action = egreedy_action(epsilon, q_network, state, num_actions);
         [next_state, reward, done] = step(M, state, action, actions, m, n);
@@ -68,6 +70,8 @@ for episode = 1 : num_episodes
         end        
         
         state = next_state;
+        
+        G = G + reward;
     end
 
     % if mod(episode, 10) == 0
@@ -75,14 +79,18 @@ for episode = 1 : num_episodes
     % end
 
     total_loss(episode) = loss;
-    
-    fprintf('Episodio: %d, Pasos: %d, Pérdida: %.4f\n', episode, steps, loss)
+    total_returns(episode) = G;
+    fprintf('Episodio: %d, Pasos: %d, Retorno: %d, Pérdida: %.2f\n', episode, steps, G, loss)
 end
+
+save('model_deep_sarsa.mat', 'q_network')
 
 policy = create_policy(q_network, M);
 
-plot(1:num_episodes, total_loss), grid on
-title('Deep Sarsa'), xlabel('Épocas'), ylabel('Error (MSE)')
+subplot(2,1,1), plot(1:num_episodes, total_returns), grid on
+title('Retornos'), xlabel('Épocas'), ylabel('Retorno')
+subplot(2,1,2), plot(1:num_episodes, total_loss), grid on
+title('Pérdida'), xlabel('Épocas'), ylabel('Error')
 
 draw_maze(M, start_position, policy, [goal_row goal_col])
 
