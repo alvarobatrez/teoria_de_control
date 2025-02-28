@@ -14,7 +14,6 @@ gamma = 0.99;
 epsilon = 1;
 decay = 0.975;
 num_episodes = 1000;
-max_steps = 1e5;
 
 buffer_capacity = 1e6;
 batch_size = 128;
@@ -45,7 +44,7 @@ for episode = 1 : num_episodes
     G = 0;
     n = 0;
     
-    while ~isequal(state, [goal_row goal_col])% && steps < max_steps
+    while ~isequal(state, [goal_row goal_col])
         steps = steps + 1;
         action = egreedy_action(epsilon, q_network, state, num_actions);
         [next_state, reward, done] = step(M, state, action, actions, m, n);
@@ -77,10 +76,6 @@ for episode = 1 : num_episodes
         
         G = G + reward;
     end
-
-    % if mod(episode, 10) == 0
-    %     target_network = copy_weights(q_network, target_network);
-    % end
 
     total_loss(episode) = loss;
     total_returns(episode) = G;
@@ -114,12 +109,11 @@ function action = egreedy_action(epsilon, model, state, num_actions)
 end
 
 function [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample)
-    sample_reshaped = reshape(cell2mat(sample), 7, [])';
-    state_b = sample_reshaped(:, 1:2);
-    action_b = sample_reshaped(:, 3);
-    reward_b = sample_reshaped(:, 4);
-    done_b = sample_reshaped(:, 5);
-    next_state_b = sample_reshaped(:, 6:7);
+    state_b = sample(:, 1:2);
+    action_b = sample(:, 3);
+    reward_b = sample(:, 4);
+    done_b = sample(:, 5);
+    next_state_b = sample(:, 6:7);
 end
 
 function q = gather_q(model, state, action, batch_size)
@@ -162,19 +156,5 @@ end
 function model_target = update_target_network(model, model_target, tau)
     for i = 1 : model.num_layers
         model_target.layers{i}.weights = tau * model.layers{i}.weights + (1 - tau) * model_target.layers{i}.weights;
-    end
-end
-
-function policy = create_policy(model, M)
-    [m, n] = size(M);
-    policy = zeros(m, n);
-
-    for i = 1 : m
-        for j = 1 : n
-            if M(i, j) == -1
-                [~, action] = max(model.predict([i j]));
-                policy(i, j) = action;
-            end
-        end
     end
 end

@@ -1,7 +1,7 @@
 classdef ExperienceReplay
     properties
         capacity
-        memory = {}
+        memory
         position = 1
         current_size = 0
     end
@@ -9,11 +9,11 @@ classdef ExperienceReplay
     methods
         function obj = ExperienceReplay(capacity)
             obj.capacity = capacity;
-            obj.memory = cell(1, capacity);
+            obj.memory = zeros(capacity, 7);
         end
 
         function obj = insert(obj, transition)
-            obj.memory{obj.position} = transition;
+            obj.memory(obj.position, :) = transition;
             
             if obj.current_size < obj.capacity
                 obj.current_size = obj.current_size + 1;
@@ -24,7 +24,7 @@ classdef ExperienceReplay
 
         function batch = sample(obj, batch_size)
             indices = randperm(obj.current_size, batch_size);
-            batch = obj.memory(indices);
+            batch = obj.memory(indices, :);
         end
 
         function result = can_sample(obj, batch_size)
