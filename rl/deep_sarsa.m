@@ -1,6 +1,6 @@
 close all; clear, clc
 
-M = create_maze_small();
+M = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
 start_position = [1 2];
@@ -12,8 +12,8 @@ num_actions = length(actions);
 tau = 0.005;
 gamma = 0.99;
 epsilon = 1;
-decay = 0.95;
-num_episodes = 500;
+decay = 0.975;
+num_episodes = 1000;
 max_steps = 1e5;
 
 buffer_capacity = 1e6;
@@ -49,6 +49,10 @@ for episode = 1 : num_episodes
         steps = steps + 1;
         action = egreedy_action(epsilon, q_network, state, num_actions);
         [next_state, reward, done] = step(M, state, action, actions, m, n);
+
+        if reward == 10
+            reward = 100;
+        end
 
         buffer = buffer.insert([state action reward done next_state]);
 
