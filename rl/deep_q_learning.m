@@ -13,7 +13,7 @@ tau = 0.005;
 gamma = 0.99;
 epsilon = 1;
 decay = 0.975;
-num_episodes = 1000;
+num_episodes = 500;
 
 buffer_capacity = 1e6;
 batch_size = 128;

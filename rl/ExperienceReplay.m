@@ -28,7 +28,7 @@ classdef ExperienceReplay
         end
 
         function result = can_sample(obj, batch_size)
-            result = obj.current_size >= batch_size;
+            result = obj.current_size >= batch_size * 10;
         end
     end
 end

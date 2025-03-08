@@ -13,7 +13,7 @@ tau = 0.005;
 gamma = 0.99;
 epsilon = 1;
 decay = 0.975;
-num_episodes = 1000;
+num_episodes = 500;
 
 buffer_capacity = 1e6;
 batch_size = 128;
@@ -60,7 +60,7 @@ for episode = 1 : num_episodes
             [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample);
             
             next_action_b = egreedy_action(epsilon, q_network, next_state_b, num_actions);
-            next_q_b = gather_q(target_network, next_state_b, next_action_b, batch_size);
+            next_q_b = gather_q(target_network, next_state_b, next_action_b,  batch_size);
             target_b = reward_b + (1 - done_b) * gamma .* next_q_b;
 
             q_b = gather_q(q_network, state_b, action_b, batch_size);
