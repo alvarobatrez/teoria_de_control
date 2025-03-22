@@ -23,7 +23,7 @@ num_inputs = 2;
 layers = {{128, 'relu'} {64, 'relu'} {4, 'linear'}};
 
 learning_rate = 0.001;
-optimizer = 'adam';
+optimizer = 'adamW';
 loss_function = 'mse';
 
 q_network = NeuralNetwork(num_inputs, layers);
