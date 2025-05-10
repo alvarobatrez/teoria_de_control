@@ -1,4 +1,11 @@
 function dxdt = pend_cart(t, X, M, m, L, g, b, d, u)
+% M = mass cart
+% m = mass pendulum
+% L = length pendulum
+% g = gravity
+% b = friction cart
+% d = friction pendulum
+% u = force applied
 v = X(2);
 th = X(3);
 w = X(4);
