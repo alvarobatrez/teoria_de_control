@@ -66,6 +66,8 @@ classdef NeuralNetwork
                     a = relu(z);
                 elseif strcmp(activation_function, 'linear')
                     a = z;
+                elseif strcmp(activation_function, 'softmax')
+                    a = softmax(z);
                 end
 
                 outputs{i+1} = a';
@@ -81,6 +83,8 @@ classdef NeuralNetwork
                 case 'relu'
                     derivative = relu_derivative(x);
                 case 'linear'
+                    derivative = ones(size(x));
+                case 'softmax'
                     derivative = 1;
             end
         end
@@ -88,12 +92,15 @@ classdef NeuralNetwork
         function grad = compute_gradients(model, batch_size, outputs, y)
             delta = cell(1, model.num_layers);
             grad = cell(1, model.num_layers);
-
-            layer_activation = model.layers{end}.activation;
             a = outputs{end};
-            derivative = model.activation_derivative(layer_activation, a);
 
-            delta{end} = derivative .* (outputs{end} - y);
+            if strcmp(model.layers{end}.activation, 'softmax')
+                delta{end} = a - y;
+            else
+                layer_activation = model.layers{end}.activation;
+                derivative = model.activation_derivative(layer_activation, a);
+                delta{end} = derivative .* (a - y);
+            end
 
             for i = model.num_layers - 1 : -1 : 1
                 layer_activation = model.layers{i}.activation;
@@ -127,12 +134,18 @@ classdef NeuralNetwork
             [batch_size, ~] = size(X);
             [~, num_outputs] = size(Y);
 
+            e = 1e-12;
+
             for epoch = 1 : epochs
                 loss = 0;
                 outputs = forward(model, X);
+                a = outputs{end};
 
                 if strcmp(model.loss_function, 'mse')
                     loss = loss + sum((outputs{end} - Y).^2, 'all') / (batch_size * num_outputs);
+                elseif strcmp(model.loss_function, 'cross_entropy')
+                    a_clamp = max(min(a, 1-e), e);
+                    loss = -sum(Y .*log(a_clamp), 'all') / batch_size;
                 end
 
                 grad = compute_gradients(model, batch_size, outputs, Y);
